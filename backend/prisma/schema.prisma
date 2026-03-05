@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("user") // "admin" ou "user"
+  provider  String   @default("email")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id                 String   @id @default(uuid())
+  name               String
+  photo              String?
+  filamentPrice      Float
+  filamentWeight     Float
+  powerConsumption   Float
+  printTimeHours     Float
+  printTimeMinutes   Float
+  filamentWeightUsed Float
+  kwhPrice           Float
+  printerValue       Float
+  printerLifeHours   Float
+  wastePercentage    Float
+  totalCost          Float
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Setting {
+  id           String   @id @default("shopee_config")
+  shopId       String?
+  partnerId    String?
+  partnerKey   String? // Criptografado
+  accessToken  String? // Criptografado
+  refreshToken String? // Criptografado
+  isActive     Boolean  @default(false)
+  sandboxMode  Boolean  @default(true)
+  updatedAt    DateTime @updatedAt
+}
