@@ -67,38 +67,43 @@ export function Cost3DCalculator({ onProductSaved }: Cost3DCalculatorProps) {
   };
 
   // Handler para salvar produto
-  const handleSaveProduct = () => {
+  const handleSaveProduct = async () => {
     if (!productName.trim()) {
       alert('Digite o nome do produto');
       return;
     }
 
-    const newProduct = createProduct({
-      name: productName.trim(),
-      photo: productPhoto,
-      filamentPrice: filament.price,
-      filamentWeight: filament.weight,
-      powerConsumption: printer.powerConsumption,
-      printTimeHours: printer.printTimeHours,
-      printTimeMinutes: printer.printTimeMinutes,
-      filamentWeightUsed: printer.filamentWeightUsed,
-      kwhPrice: energy.kwhPrice,
-      printerValue: depreciation.printerValue,
-      printerLifeHours: depreciation.totalLifeHours,
-      wastePercentage: waste.wastePercentage,
-      totalCost: calculation.totalManufacturingCost,
-    });
+    try {
+      const newProduct = await createProduct({
+        name: productName.trim(),
+        photo: productPhoto,
+        filamentPrice: filament.price,
+        filamentWeight: filament.weight,
+        powerConsumption: printer.powerConsumption,
+        printTimeHours: printer.printTimeHours,
+        printTimeMinutes: printer.printTimeMinutes,
+        filamentWeightUsed: printer.filamentWeightUsed,
+        kwhPrice: energy.kwhPrice,
+        printerValue: depreciation.printerValue,
+        printerLifeHours: depreciation.totalLifeHours,
+        wastePercentage: waste.wastePercentage,
+        totalCost: calculation.totalManufacturingCost,
+      });
 
-    setSaveSuccess(true);
-    if (onProductSaved) {
-      onProductSaved(newProduct);
+      setSaveSuccess(true);
+      if (onProductSaved) {
+        onProductSaved(newProduct);
+      }
+
+      // Limpar campos após salvar
+      setProductName('');
+      setProductPhoto('');
+
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      console.error('Failed to save product', error);
+      alert('Erro ao salvar produto');
     }
-
-    // Limpar campos após salvar
-    setProductName('');
-    setProductPhoto('');
-
-    setTimeout(() => setSaveSuccess(false), 3000);
   };
 
   // Handler para carregar produto salvo

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, Package, Tag, Clock, Trash } from 'lucide-react';
+import { Loader2, Package, Clock, Trash } from 'lucide-react';
 import { use3DProducts } from '@/hooks/use3DProducts';
 import { Button } from '@/components/ui/button';
 
