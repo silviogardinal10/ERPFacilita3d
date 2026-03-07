@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # O Backend (Node.js API)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: erpfacilita-backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      # Esse volume é crucial: ele garante que o SQLite salvo no dev.db permaneça
+      # mesmo se o container reiniciar ou atualizar
+      - prisma_data:/app/prisma/
+
+  # O Frontend (React via Nginx)
+  frontend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      args:
+        # ATENÇÃO: Troque localhost pelo seu IP da AWS público antes de dar build
+        - VITE_API_URL=http://localhost:3001
+    container_name: erpfacilita-frontend
+    restart: unless-stopped
+    ports:
+      # Mapeia a porta 80 do Nginx dentro do container para a porta 80 do próprio servidor EC2
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  # Declaração do volume persistente de banco de dados SQLite
+  prisma_data:
