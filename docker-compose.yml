@@ -12,6 +12,10 @@ services:
       # Esse volume é crucial: ele garante que o SQLite salvo no dev.db permaneça
       # mesmo se o container reiniciar ou atualizar
       - prisma_data:/app/prisma/
+    environment:
+      - DATABASE_URL=file:./dev.db
+    # Adicione ESTA LINHA AQUIII:
+    command: sh -c "npx prisma db push && node /app/criar_admin.js && npm run dev"
 
   # O Frontend (React via Nginx)
   frontend:
