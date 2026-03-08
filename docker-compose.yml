@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
       args:
         # ATENÇÃO: Troque localhost pelo seu IP da AWS público antes de dar build
-        - VITE_API_URL=http://localhost:3001
+        - VITE_API_URL=http://facilita3d.shop:3001
     container_name: erpfacilita-frontend
     restart: unless-stopped
     ports:
