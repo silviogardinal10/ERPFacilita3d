@@ -1,7 +1,7 @@
-FROM node:20-alpine
+FROM node:20-slim
 
-# Instala ferramentas necessárias para compilar dependências como o bcrypt
-RUN apk add --no-cache python3 make g++ sqlite
+# Instala ferramentas necessárias
+RUN apt-get update -y && apt-get install -y openssl python3 make g++ sqlite3
 
 # Define o diretório de trabalho
 WORKDIR /app

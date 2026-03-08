@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # O Backend (Node.js API)
   backend:
