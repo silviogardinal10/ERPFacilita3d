@@ -11,7 +11,11 @@ import settingsRoutes from './routes/settings';
 const app = express();
 const prisma = new PrismaClient();
 
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost', 'https://facilita3d.shop', 'https://www.facilita3d.shop', '*'],
+    credentials: true
+}));
+
 app.use(express.json());
 
 // Rotas
