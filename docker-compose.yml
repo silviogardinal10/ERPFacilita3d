@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
       args:
         # Repare que agora a API dele usa HTTPS tbm!
-        - VITE_API_URL=https://facilita3d.shop:3001
+        - VITE_API_URL=https://facilita3d.shop/api
     container_name: erpfacilita-frontend
     restart: unless-stopped
     ports:
