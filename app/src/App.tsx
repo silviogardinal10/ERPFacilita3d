@@ -9,7 +9,8 @@ import {
   Menu,
   LogOut,
   Users,
-  Printer
+  Printer,
+  Package
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -35,6 +36,7 @@ import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { useOrderManagement } from '@/hooks/useOrderManagement';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { ProductsTab } from '@/components/products/ProductsTab';
+import { SuppliesTab } from '@/components/supplies/SuppliesTab';
 import './App.css';
 
 // Componente principal protegido
@@ -115,6 +117,7 @@ function AppContent() {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'print', label: 'Impressão', icon: Printer },
     { id: 'calculator', label: 'Custo 3D', icon: Calculator },
+    { id: 'supplies', label: 'Suprimentos', icon: Package },
     { id: 'products', label: 'Produtos', icon: Box },
     { id: 'pricing', label: 'Precificação', icon: Tag },
     ...(user?.role === 'admin' ? [{ id: 'users', label: 'Usuários', icon: Users }] : []),
@@ -260,6 +263,7 @@ function AppContent() {
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
               <TabsTrigger value="print">Impressão</TabsTrigger>
               <TabsTrigger value="calculator">Custo 3D</TabsTrigger>
+              <TabsTrigger value="supplies">Suprimentos</TabsTrigger>
               <TabsTrigger value="pricing">Precificação</TabsTrigger>
               <TabsTrigger value="settings">Configurações</TabsTrigger>
             </TabsList>
@@ -284,6 +288,10 @@ function AppContent() {
                 manufacturingCost={selectedProductCost}
                 onSelectProduct={handleSelectProduct}
               />
+            </TabsContent>
+
+            <TabsContent value="supplies" className="m-0">
+              <SuppliesTab />
             </TabsContent>
 
             <TabsContent value="products" className="m-0">

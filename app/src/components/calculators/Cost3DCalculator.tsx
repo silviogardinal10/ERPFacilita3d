@@ -23,7 +23,15 @@ import {
 } from 'lucide-react';
 import { use3DCostCalculator } from '@/hooks/use3DCostCalculator';
 import { use3DProducts, type Product3D } from '@/hooks/use3DProducts';
+import { useSupplies } from '@/hooks/useSupplies';
 import { formatCurrency } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Cost3DCalculatorProps {
   onProductSaved?: (product: Product3D) => void;
@@ -46,6 +54,9 @@ export function Cost3DCalculator({ onProductSaved }: Cost3DCalculatorProps) {
   } = use3DCostCalculator();
 
   const { createProduct, products, deleteProduct } = use3DProducts();
+  const { supplies } = useSupplies();
+  
+  const filamentSupplies = supplies.filter(s => s.type === 'filamento');
 
   // Estados para cadastro do produto
   const [productName, setProductName] = useState('');
@@ -307,11 +318,30 @@ export function Cost3DCalculator({ onProductSaved }: Cost3DCalculatorProps) {
         <div className="space-y-6">
           {/* Filamento */}
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Scale className="h-5 w-5 text-amber-600" />
                 Filamento
               </CardTitle>
+              {filamentSupplies.length > 0 && (
+                <div className="w-1/2">
+                  <Select onValueChange={(val) => {
+                    const selected = filamentSupplies.find(f => f.id === val);
+                    if (selected) {
+                      updateFilament({ price: selected.pricePaid, weight: selected.quantity });
+                    }
+                  }}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Puxar do Estoque..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filamentSupplies.map(f => (
+                        <SelectItem key={f.id} value={f.id}>{f.name} ({f.color})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">

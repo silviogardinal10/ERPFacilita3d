@@ -22,7 +22,15 @@ import {
 } from 'lucide-react';
 import { useShopeePricing } from '@/hooks/useShopeePricing';
 import { use3DProducts, type Product3D } from '@/hooks/use3DProducts';
+import { useSupplies } from '@/hooks/useSupplies';
 import { formatCurrency } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ShopeePricingProps {
   manufacturingCost: number;
@@ -43,6 +51,9 @@ export function ShopeePricing({ manufacturingCost, onSelectProduct }: ShopeePric
   } = useShopeePricing(manufacturingCost);
 
   const { products } = use3DProducts();
+  const { supplies } = useSupplies();
+  
+  const packagingSupplies = supplies.filter(s => s.type === 'embalagem');
 
   const [selectedProduct, setSelectedProduct] = useState<Product3D | null>(null);
   const [showProductSelector, setShowProductSelector] = useState(false);
@@ -282,13 +293,49 @@ export function ShopeePricing({ manufacturingCost, onSelectProduct }: ShopeePric
 
           {/* Embalagem */}
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Package className="h-5 w-5 text-blue-600" />
                 Custo de Embalagem
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {packagingSupplies.length > 0 && (
+                <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 mb-4">
+                  <Label className="text-blue-800 mb-2 block">Puxar do Estoque</Label>
+                  <Select onValueChange={(val) => {
+                    const selected = packagingSupplies.find(p => p.id === val);
+                    if (selected) {
+                      // Assume the unit cost is the pricePaid divided by quantity of items
+                      const unitCost = selected.pricePaid / selected.quantity;
+                      
+                      // Identify type broadly by name to fill the correct field
+                      const name = selected.name.toLowerCase();
+                      if (name.includes('caixa')) updatePackaging({ box: unitCost });
+                      else if (name.includes('fita')) updatePackaging({ tape: unitCost });
+                      else if (name.includes('bolha')) updatePackaging({ bubbleWrap: unitCost });
+                      else updatePackaging({ other: unitCost });
+                    }
+                  }}>
+                    <SelectTrigger className="h-9 bg-white">
+                      <SelectValue placeholder="Selecione uma embalagem..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {packagingSupplies.map(p => {
+                        const unitCost = p.pricePaid / p.quantity;
+                        return (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name} - {formatCurrency(unitCost)}/{p.unit}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-blue-600 mt-2">
+                    Selecionar um item do estoque irá preencher automaticamente um dos campos abaixo baseado no nome da embalagem.
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="box">Caixa (R$)</Label>

@@ -7,6 +7,7 @@ import authRoutes from './routes/auth';
 import usersRoutes from './routes/users';
 import productsRoutes from './routes/products';
 import settingsRoutes from './routes/settings';
+import suppliesRoutes from './routes/supplies';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -23,6 +24,7 @@ app.use('/auth', authRoutes);
 app.use('/users', usersRoutes);
 app.use('/products', productsRoutes);
 app.use('/settings', settingsRoutes);
+app.use('/supplies', suppliesRoutes);
 
 // Seed initial Admin se não existir
 async function seedAdmin() {
