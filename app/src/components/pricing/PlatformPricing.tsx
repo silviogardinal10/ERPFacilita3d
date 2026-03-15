@@ -73,6 +73,14 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
     setSelectedProduct(product);
     setManufacturingCost(product.totalCost);
     setShowProductSelector(false);
+    
+    // Zera outras configurações para um cálculo "limpo" no novo produto,
+    // garantindo que os preços salvos (se existirem) se destaquem
+    resetAll();
+    
+    // Mantém o custo de fabricação que acabou de ser resetado pelo resetAll
+    setManufacturingCost(product.totalCost);
+
     if (onSelectProduct) {
       onSelectProduct(product);
     }
@@ -84,9 +92,9 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
     setIsSaving(true);
     try {
       await updateProduct(selectedProduct.id, {
-        shopeePrice: calculation.shopeeSuggestedPrice,
-        tiktokPrice: calculation.tiktokSuggestedPrice,
-        temuPrice: calculation.temuSuggestedPrice,
+        shopeePrice: pricingConfig.discountPercentage > 0 ? calculation.shopeePriceWithDiscount : calculation.shopeeSuggestedPrice,
+        tiktokPrice: pricingConfig.discountPercentage > 0 ? calculation.tiktokPriceWithDiscount : calculation.tiktokSuggestedPrice,
+        temuPrice: pricingConfig.discountPercentage > 0 ? calculation.temuPriceWithDiscount : calculation.temuSuggestedPrice,
         packagingCost: calculation.totalPackagingCost
       });
       setSaveSuccess(true);
@@ -95,9 +103,9 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
       // Update local state to reflect saved status
       setSelectedProduct(prev => prev ? {
         ...prev,
-        shopeePrice: calculation.shopeeSuggestedPrice,
-        tiktokPrice: calculation.tiktokSuggestedPrice,
-        temuPrice: calculation.temuSuggestedPrice,
+        shopeePrice: pricingConfig.discountPercentage > 0 ? calculation.shopeePriceWithDiscount : calculation.shopeeSuggestedPrice,
+        tiktokPrice: pricingConfig.discountPercentage > 0 ? calculation.tiktokPriceWithDiscount : calculation.tiktokSuggestedPrice,
+        temuPrice: pricingConfig.discountPercentage > 0 ? calculation.temuPriceWithDiscount : calculation.temuSuggestedPrice,
         packagingCost: calculation.totalPackagingCost
       } : null);
 
@@ -445,6 +453,7 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
                         profit={calculation.profitAmount}
                         mfgCost={calculation.manufacturingCost}
                         pkgCost={calculation.totalPackagingCost}
+                        savedPrice={selectedProduct?.shopeePrice}
                      />
                 </TabsContent>
 
@@ -480,6 +489,7 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
                         profit={calculation.profitAmount}
                         mfgCost={calculation.manufacturingCost}
                         pkgCost={calculation.totalPackagingCost}
+                        savedPrice={selectedProduct?.tiktokPrice}
                      />
                 </TabsContent>
 
@@ -516,6 +526,7 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
                         profit={calculation.profitAmount}
                         mfgCost={calculation.manufacturingCost}
                         pkgCost={calculation.totalPackagingCost}
+                        savedPrice={selectedProduct?.temuPrice}
                      />
                 </TabsContent>
 
@@ -527,7 +538,7 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
 }
 
 // Componente auxiliar para os resultados
-function PricingResultCard({ name, theme, suggestedPrice, priceWithDiscount, discountPercentage, commission, fixedFee, breakEven, profit, mfgCost, pkgCost }: any) {
+function PricingResultCard({ name, theme, suggestedPrice, priceWithDiscount, discountPercentage, commission, fixedFee, breakEven, profit, mfgCost, pkgCost, savedPrice }: any) {
     const isProfitable = suggestedPrice > breakEven;
     
     // Theme configurations
@@ -565,10 +576,17 @@ function PricingResultCard({ name, theme, suggestedPrice, priceWithDiscount, dis
                 </CardHeader>
                 <CardContent className="space-y-4 pt-4">
                     <div className="text-center py-2 flex flex-col items-center">
-                        <p className={`${t.textLight} mb-1 opacity-90`}>Para ganhar {formatCurrency(profit)} de lucro limpo:</p>
+                        {savedPrice ? (
+                            <div className="mb-4 w-full bg-white/20 rounded-lg p-3 border border-white/30 backdrop-blur-sm">
+                                <p className="text-xs text-white/90 uppercase tracking-wider font-semibold mb-1 flex items-center justify-center gap-1"><CheckCircle2 className="w-3 h-3"/> Preço Atual Salvo</p>
+                                <p className="text-3xl font-bold">{formatCurrency(savedPrice)}</p>
+                            </div>
+                        ) : null}
+
+                        <p className={`${t.textLight} mb-1 opacity-90 text-sm`}>Para ganhar {formatCurrency(profit)} de lucro limpo (Sugestão):</p>
                         
                         {discountPercentage > 0 && priceWithDiscount > suggestedPrice ? (
-                            <div className="w-full bg-black/10 rounded-lg p-3 mt-2 border border-white/10">
+                            <div className="w-full bg-black/10 rounded-lg p-3 mt-1 border border-white/10">
                                 <p className="text-xs text-white/80 uppercase tracking-wider font-semibold mb-1">Cadastrar na plataforma por:</p>
                                 <p className="text-4xl font-bold mb-2">{formatCurrency(priceWithDiscount)}</p>
                                 <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm mt-2">
@@ -577,7 +595,7 @@ function PricingResultCard({ name, theme, suggestedPrice, priceWithDiscount, dis
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-5xl font-bold mt-2">{formatCurrency(suggestedPrice)}</p>
+                            <p className="text-4xl font-bold mt-1 text-white/90">{formatCurrency(suggestedPrice)}</p>
                         )}
                     </div>
 
