@@ -314,6 +314,7 @@ export function ShopeePricing({ manufacturingCost, onSelectProduct }: ShopeePric
                       if (name.includes('caixa')) updatePackaging({ box: unitCost });
                       else if (name.includes('fita')) updatePackaging({ tape: unitCost });
                       else if (name.includes('bolha')) updatePackaging({ bubbleWrap: unitCost });
+                      else if (name.includes('etiqueta')) updatePackaging({ label: unitCost });
                       else updatePackaging({ other: unitCost });
                     }
                   }}>
@@ -373,18 +374,30 @@ export function ShopeePricing({ manufacturingCost, onSelectProduct }: ShopeePric
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="other">Outros (R$)</Label>
+                  <Label htmlFor="label">Etiqueta (R$)</Label>
                   <Input
-                    id="other"
+                    id="label"
                     type="number"
                     step="0.01"
                     min="0"
-                    value={packaging.other}
-                    onChange={(e) => updatePackaging({ other: parseFloat(e.target.value) || 0 })}
+                    value={packaging.label}
+                    onChange={(e) => updatePackaging({ label: parseFloat(e.target.value) || 0 })}
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-between text-sm">
+              
+              <div className="space-y-2 w-1/2 pr-2 mt-4">
+                <Label htmlFor="other">Outros (R$)</Label>
+                <Input
+                  id="other"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={packaging.other}
+                  onChange={(e) => updatePackaging({ other: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="flex items-center justify-between text-sm mt-4 pt-4 border-t border-slate-100">
                 <span className="text-slate-500">Total embalagem:</span>
                 <Badge variant="secondary" className="font-mono">
                   {formatCurrency(calculation.totalPackagingCost)}

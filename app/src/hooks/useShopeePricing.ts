@@ -15,6 +15,7 @@ const defaultPackaging: PackagingCosts = {
   box: 2.50,       // Caixa
   tape: 0.50,      // Fita
   bubbleWrap: 1.00, // Plástico bolha
+  label: 0.15,     // Etiqueta
   other: 0.50,     // Outros
 };
 
@@ -31,7 +32,7 @@ export function useShopeePricing(initialManufacturingCost: number = 0) {
 
   // Custo total de embalagem
   const totalPackagingCost = useMemo(() => {
-    return packaging.box + packaging.tape + packaging.bubbleWrap + packaging.other;
+    return packaging.box + packaging.tape + packaging.bubbleWrap + packaging.label + packaging.other;
   }, [packaging]);
 
   // Cálculo completo de precificação

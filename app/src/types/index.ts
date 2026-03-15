@@ -49,6 +49,7 @@ export interface PackagingCosts {
   box: number;           // Custo da caixa (R$)
   tape: number;          // Custo da fita (R$)
   bubbleWrap: number;    // Custo do plástico bolha (R$)
+  label: number;         // Custo da etiqueta (R$)
   other: number;         // Outros custos (R$)
 }
 
