@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
-  ShoppingBag, 
   Printer,
   PrinterIcon,
   Store,
@@ -11,8 +10,6 @@ import {
   ShoppingBasket
 } from 'lucide-react';
 import { useOrderManagement } from '@/hooks/useOrderManagement';
-import { formatCurrency } from '@/lib/utils';
-import type { OrderStatus } from '@/types';
 
 interface PrintTabProps {
   onPrintLabel: (orderId: string) => void;
