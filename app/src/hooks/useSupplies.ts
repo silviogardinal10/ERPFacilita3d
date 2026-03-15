@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import api from '../lib/api';
 
 export interface Supply {
   id: string;
@@ -12,33 +13,20 @@ export interface Supply {
   updatedAt: string;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
 export function useSupplies() {
   const [supplies, setSupplies] = useState<Supply[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    };
-  };
-
   const fetchSupplies = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_URL}/supplies`, {
-        headers: getHeaders()
-      });
-      if (!response.ok) throw new Error('Falha ao buscar suprimentos');
-      const data = await response.json();
-      setSupplies(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      const response = await api.get('/supplies');
+      setSupplies(response.data);
+    } catch (err: any) {
+      console.error('Failed to fetch supplies:', err);
+      setError(err.message || 'Erro desconhecido');
     } finally {
       setIsLoading(false);
     }
@@ -46,45 +34,32 @@ export function useSupplies() {
 
   const createSupply = async (supplyData: Omit<Supply, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const response = await fetch(`${API_URL}/supplies`, {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify(supplyData)
-      });
-      if (!response.ok) throw new Error('Falha ao criar suprimento');
-      const newSupply = await response.json();
-      setSupplies(prev => [newSupply, ...prev]);
-      return newSupply;
+      const response = await api.post('/supplies', supplyData);
+      setSupplies(prev => [response.data, ...prev]);
+      return response.data;
     } catch (err) {
+      console.error('Failed to create supply:', err);
       throw err;
     }
   };
 
   const updateSupply = async (id: string, supplyData: Partial<Supply>) => {
     try {
-      const response = await fetch(`${API_URL}/supplies/${id}`, {
-        method: 'PUT',
-        headers: getHeaders(),
-        body: JSON.stringify(supplyData)
-      });
-      if (!response.ok) throw new Error('Falha ao atualizar suprimento');
-      const updatedSupply = await response.json();
-      setSupplies(prev => prev.map(s => s.id === id ? updatedSupply : s));
-      return updatedSupply;
+      const response = await api.put(`/supplies/${id}`, supplyData);
+      setSupplies(prev => prev.map(s => s.id === id ? response.data : s));
+      return response.data;
     } catch (err) {
+      console.error('Failed to update supply:', err);
       throw err;
     }
   };
 
   const deleteSupply = async (id: string) => {
     try {
-      const response = await fetch(`${API_URL}/supplies/${id}`, {
-        method: 'DELETE',
-        headers: getHeaders()
-      });
-      if (!response.ok) throw new Error('Falha ao deletar suprimento');
+      await api.delete(`/supplies/${id}`);
       setSupplies(prev => prev.filter(s => s.id !== id));
     } catch (err) {
+      console.error('Failed to delete supply:', err);
       throw err;
     }
   };
