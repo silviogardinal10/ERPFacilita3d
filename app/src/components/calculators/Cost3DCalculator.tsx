@@ -325,7 +325,9 @@ export function Cost3DCalculator({ onProductSaved }: Cost3DCalculatorProps) {
               </CardTitle>
               {filamentSupplies.length > 0 && (
                 <div className="w-1/2">
-                  <Select onValueChange={(val) => {
+                  <Select 
+                    value={filamentSupplies.find(f => f.pricePaid === filament.price)?.id || ""}
+                    onValueChange={(val) => {
                     const selected = filamentSupplies.find(f => f.id === val);
                     if (selected) {
                       updateFilament({ price: selected.pricePaid, weight: selected.quantity });

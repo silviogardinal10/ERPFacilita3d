@@ -54,6 +54,7 @@ export function ShopeePricing({ manufacturingCost, onSelectProduct }: ShopeePric
   const { supplies } = useSupplies();
   
   const packagingSupplies = supplies.filter(s => s.type === 'embalagem');
+  const labelSupplies = supplies.filter(s => s.type === 'etiqueta');
 
   const [selectedProduct, setSelectedProduct] = useState<Product3D | null>(null);
   const [showProductSelector, setShowProductSelector] = useState(false);
@@ -314,7 +315,6 @@ export function ShopeePricing({ manufacturingCost, onSelectProduct }: ShopeePric
                       if (name.includes('caixa')) updatePackaging({ box: unitCost });
                       else if (name.includes('fita')) updatePackaging({ tape: unitCost });
                       else if (name.includes('bolha')) updatePackaging({ bubbleWrap: unitCost });
-                      else if (name.includes('etiqueta')) updatePackaging({ label: unitCost });
                       else updatePackaging({ other: unitCost });
                     }
                   }}>
@@ -385,6 +385,34 @@ export function ShopeePricing({ manufacturingCost, onSelectProduct }: ShopeePric
                   />
                 </div>
               </div>
+              
+              
+              {labelSupplies.length > 0 && (
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 mt-4 mb-4">
+                  <Label className="text-slate-800 mb-2 block">Puxar Etiquetas do Estoque</Label>
+                  <Select onValueChange={(val) => {
+                    const selected = labelSupplies.find(p => p.id === val);
+                    if (selected) {
+                      const unitCost = selected.pricePaid / selected.quantity;
+                      updatePackaging({ label: unitCost });
+                    }
+                  }}>
+                    <SelectTrigger className="h-9 bg-white">
+                      <SelectValue placeholder="Selecione uma etiqueta..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {labelSupplies.map(p => {
+                        const unitCost = p.pricePaid / p.quantity;
+                        return (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name} - {formatCurrency(unitCost)}/{p.unit}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               
               <div className="space-y-2 w-1/2 pr-2 mt-4">
                 <Label htmlFor="other">Outros (R$)</Label>

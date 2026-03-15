@@ -106,6 +106,7 @@ export function SuppliesTab() {
     switch(type) {
       case 'filamento': return 'default';
       case 'embalagem': return 'secondary';
+      case 'etiqueta': return 'outline';
       default: return 'outline';
     }
   };
@@ -149,7 +150,7 @@ export function SuppliesTab() {
                       setFormData(prev => ({ 
                         ...prev, 
                         type: val, 
-                        unit: val === 'filamento' ? 'g' : val === 'embalagem' ? 'unidade' : 'unidade' 
+                        unit: val === 'filamento' ? 'g' : (val === 'embalagem' || val === 'etiqueta') ? 'unidade' : 'unidade' 
                       }))
                     }}
                   >
@@ -159,6 +160,7 @@ export function SuppliesTab() {
                     <SelectContent>
                       <SelectItem value="filamento">Filamento</SelectItem>
                       <SelectItem value="embalagem">Embalagem</SelectItem>
+                      <SelectItem value="etiqueta">Etiqueta</SelectItem>
                       <SelectItem value="outro">Outro</SelectItem>
                     </SelectContent>
                   </Select>
