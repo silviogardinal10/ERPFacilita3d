@@ -34,6 +34,10 @@ model Product {
   printerLifeHours   Float
   wastePercentage    Float
   totalCost          Float
+  shopeePrice        Float?
+  tiktokPrice        Float?
+  temuPrice          Float?
+  packagingCost      Float?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 }

@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Cost3DCalculator } from '@/components/calculators/Cost3DCalculator';
-import { ShopeePricing } from '@/components/pricing/ShopeePricing';
+import { PlatformPricing } from '@/components/pricing/PlatformPricing';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { LabelPrinter } from '@/components/labels/LabelPrinter';
 import { BulkLabelPrinter } from '@/components/labels/BulkLabelPrinter';
@@ -284,7 +284,7 @@ function AppContent() {
             </TabsContent>
 
             <TabsContent value="pricing" className="m-0">
-              <ShopeePricing
+              <PlatformPricing
                 manufacturingCost={selectedProductCost}
                 onSelectProduct={handleSelectProduct}
               />

@@ -16,6 +16,10 @@ export interface Product3D {
   printerLifeHours: number;
   wastePercentage: number;
   totalCost: number;
+  shopeePrice?: number;
+  tiktokPrice?: number;
+  temuPrice?: number;
+  packagingCost?: number;
   createdAt: Date;
   updatedAt: Date;
 }
