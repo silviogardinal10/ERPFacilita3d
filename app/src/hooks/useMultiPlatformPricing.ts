@@ -22,7 +22,7 @@ const defaultPackaging: PackagingCosts = {
   tape: 0.50,
   bubbleWrap: 1.00,
   label: 0.15,
-  other: 0.50,
+  other: 0.00,
 };
 
 const defaultPricingConfig: PricingConfig = {

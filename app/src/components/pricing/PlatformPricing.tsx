@@ -338,6 +338,12 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
                   <Input id="label" type="number" step="0.01" min="0" value={packaging.label} onChange={(e) => updatePackaging({ label: parseFloat(e.target.value) || 0 })} />
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="other">Outros (R$)</Label>
+                  <Input id="other" type="number" step="0.01" min="0" value={packaging.other} onChange={(e) => updatePackaging({ other: parseFloat(e.target.value) || 0 })} />
+                </div>
+              </div>
               
               {labelSupplies.length > 0 && (
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 mt-4 mb-4">

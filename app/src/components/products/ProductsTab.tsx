@@ -44,7 +44,9 @@ export function ProductsTab() {
                                         <TableHead>Nome da Peça</TableHead>
                                         <TableHead className="text-right">Custo de Fabricação</TableHead>
                                         <TableHead className="text-right">Tempo de Impressão</TableHead>
-                                        <TableHead className="text-right">Material Gasto</TableHead>
+                                        <TableHead className="text-right">Shopee</TableHead>
+                                        <TableHead className="text-right">TikTok</TableHead>
+                                        <TableHead className="text-right">Temu</TableHead>
                                         <TableHead className="w-[100px] text-center">Ações</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -57,12 +59,20 @@ export function ProductsTab() {
                                             <TableCell className="text-right text-emerald-600 font-semibold">
                                                 {formatCurrency(produto.totalCost)}
                                             </TableCell>
-                                            <TableCell className="text-right text-slate-600 flex items-center justify-end gap-1">
-                                                <Clock className="w-3 h-3 text-slate-400" />
-                                                {produto.printTimeHours}h {produto.printTimeMinutes}m
-                                            </TableCell>
                                             <TableCell className="text-right text-slate-600">
-                                                {produto.filamentWeightUsed}g
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <Clock className="w-3 h-3 text-slate-400" />
+                                                    {produto.printTimeHours}h {produto.printTimeMinutes}m
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-right font-medium text-orange-600">
+                                                {produto.shopeePrice ? formatCurrency(produto.shopeePrice) : '-'}
+                                            </TableCell>
+                                            <TableCell className="text-right font-medium text-slate-800">
+                                                {produto.tiktokPrice ? formatCurrency(produto.tiktokPrice) : '-'}
+                                            </TableCell>
+                                            <TableCell className="text-right font-medium text-[#E86424]">
+                                                {produto.temuPrice ? formatCurrency(produto.temuPrice) : '-'}
                                             </TableCell>
                                             <TableCell className="text-center">
                                                 <Button
@@ -79,7 +89,7 @@ export function ProductsTab() {
                                     ))}
                                     {products.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-12 text-slate-500">
+                                            <TableCell colSpan={7} className="text-center py-12 text-slate-500">
                                                 <Package className="h-12 w-12 mx-auto text-slate-300 mb-3" />
                                                 <p>Nenhum produto cadastrado no momento.</p>
                                                 <p className="text-sm">Vá até a aba "Custo 3D" para adicionar.</p>
