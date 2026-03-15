@@ -25,5 +25,5 @@ RUN npx prisma generate
 # Porta que o backend roda
 EXPOSE 3001
 
-# Comando para iniciar o servidor em produção usando ts-node
-CMD ["npx", "ts-node", "src/server.ts"]
+# Comando para garantir o update do DB no volume e iniciar o servidor
+CMD ["sh", "-c", "npx prisma db push && npx ts-node src/server.ts"]

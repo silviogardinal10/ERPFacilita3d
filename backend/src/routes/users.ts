@@ -66,12 +66,12 @@ router.put('/:id/status', authenticate, requireAdmin, async (req, res) => {
 
     try {
         // Prevenir que um usuário desative a si mesmo (se esse for o admin logado)
-        if (req.user && (req.user as any).id === id) {
+        if ((req as any).user && (req as any).user.id === id) {
              return res.status(400).json({ error: 'Você não pode desativar seu próprio usuário logado' });
         }
 
         const user = await prisma.user.update({
-            where: { id },
+            where: { id: id as string },
             data: { isActive },
             select: { id: true, email: true, name: true, role: true, isActive: true }
         });
@@ -88,12 +88,12 @@ router.delete('/:id', authenticate, requireAdmin, async (req, res) => {
 
     try {
         // Prevenir auto-exclusão
-        if (req.user && (req.user as any).id === id) {
+        if ((req as any).user && (req as any).user.id === id) {
              return res.status(400).json({ error: 'Você não pode deletar seu próprio usuário logado' });
         }
 
         await prisma.user.delete({
-            where: { id }
+            where: { id: id as string }
         });
 
         res.json({ success: true, message: 'Usuário deletado com sucesso' });
