@@ -1,7 +1,9 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Printer, X } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
 import type { Order } from '@/types';
 
 interface LabelPrinterProps {
@@ -9,22 +11,30 @@ interface LabelPrinterProps {
   onClose: () => void;
 }
 
+type PrintLayout = '10x15-label-only' | '10x15-both' | 'a4-both';
+
 export function LabelPrinter({ order, onClose }: LabelPrinterProps) {
+  const [layout, setLayout] = useState<PrintLayout>('10x15-label-only');
   const labelRef = useRef<HTMLDivElement>(null);
+  const declRef = useRef<HTMLDivElement>(null);
 
   if (!order) return null;
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
-    if (!printWindow || !labelRef.current) return;
+    if (!printWindow || !labelRef.current || !declRef.current) return;
 
     const labelContent = labelRef.current.innerHTML;
+    const declContent = declRef.current.innerHTML;
     
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Etiqueta ${order.orderNumber}</title>
+    let htmlContent = '';
+
+    if (layout === '10x15-label-only') {
+      htmlContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Etiqueta ${order.orderNumber}</title>
           <style>
             @page {
               size: 100mm 150mm;
@@ -109,16 +119,96 @@ export function LabelPrinter({ order, onClose }: LabelPrinterProps) {
               justify-content: center;
               font-size: 8pt;
             }
-            @media print {
-              body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-            }
           </style>
         </head>
         <body>
           ${labelContent}
         </body>
       </html>
-    `);
+      `;
+    } else if (layout === '10x15-both') {
+      htmlContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Etiqueta e Declaração ${order.orderNumber}</title>
+            <style>
+              @page { size: 100mm 150mm; margin: 0; }
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.3; }
+              .page { width: 100mm; height: 150mm; padding: 4mm; page-break-after: always; }
+              .page:last-child { page-break-after: auto; }
+              /* Add all specific classes from your generated HTML */
+              .label-container { border: 1px solid #000; height: 100%; }
+              /* The rest of the custom styles for the declaration... */
+              table { width: 100%; border-collapse: collapse; }
+              th, td { border: 1px solid #000; padding: 2px; text-align: left; }
+              .text-right { text-align: right; }
+              .text-center { text-align: center; }
+              .font-bold { font-weight: bold; }
+              .text-sm { font-size: 0.875rem; }
+              .text-lg { font-size: 1.125rem; }
+              .my-3 { margin-top: 0.75rem; margin-bottom: 0.75rem; }
+              .mb-4 { margin-bottom: 1rem; }
+              .border-b { border-bottom: 1px solid #e2e8f0; }
+              .border-b-2 { border-bottom: 2px solid #000; }
+              .bg-slate-100 { background-color: #f1f5f9; }
+              .pb-2 { padding-bottom: 0.5rem; }
+              @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+            </style>
+          </head>
+          <body>
+            <div class="page">${labelContent}</div>
+            <div class="page">${declContent}</div>
+          </body>
+        </html>
+      `;
+    } else if (layout === 'a4-both') {
+      htmlContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Etiqueta e Declaração ${order.orderNumber} (A4)</title>
+            <style>
+              @page { size: A4; margin: 10mm; }
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.3; }
+              .a4-container { display: flex; flex-direction: column; gap: 10mm; height: 100%; }
+              @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+              
+              /* Utilities for generated content */
+              .label-box { border: 1px dashed #ccc; padding: 4mm; display: flex; justify-content: center; margin-bottom: 20px;}
+              .label-content { width: 100mm; height: 150mm; transform: scale(0.9); transform-origin: top center; border: 1px solid #000; padding: 4mm;}
+              .decl-box { padding: 4mm; font-size: 11pt; border: 1px dashed #ccc;}
+              
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+              th, td { border: 1px solid #000; padding: 4px; text-align: left; }
+              th { background-color: #f1f5f9; }
+              .text-right { text-align: right; }
+              .text-center { text-align: center; }
+              .font-bold { font-weight: bold; }
+              .border-b { border-bottom: 1px solid #e2e8f0; }
+              .border-b-2 { border-bottom: 2px solid #000; }
+              .mb-4 { margin-bottom: 1rem; }
+            </style>
+          </head>
+          <body>
+            <div class="a4-container">
+              <div class="label-box">
+                <div class="label-content">
+                  ${labelContent}
+                </div>
+              </div>
+              <div class="decl-box">
+                ${declContent}
+              </div>
+            </div>
+          </body>
+        </html>
+      `;
+    }
+
+    printWindow.document.write(htmlContent);
     
     printWindow.document.close();
     printWindow.focus();
@@ -133,7 +223,19 @@ export function LabelPrinter({ order, onClose }: LabelPrinterProps) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-auto">
         <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="text-lg font-semibold">Imprimir Etiqueta</h3>
+          <div className="flex items-center gap-4">
+            <h3 className="text-lg font-semibold">Imprimir Etiqueta</h3>
+            <Select value={layout} onValueChange={(val: PrintLayout) => setLayout(val)}>
+              <SelectTrigger className="w-[280px]">
+                <SelectValue placeholder="Formato de Impressão" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10x15-label-only">Apenas Etiqueta (Térmica 10x15)</SelectItem>
+                <SelectItem value="10x15-both">Etiqueta + Declaração (Seq. Térmica 10x15)</SelectItem>
+                <SelectItem value="a4-both">Etiqueta + Declaração (Folha A4)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-5 w-5" />
           </Button>
@@ -266,10 +368,11 @@ export function LabelPrinter({ order, onClose }: LabelPrinterProps) {
           {/* Nota de Conteúdo */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Nota de Conteúdo (10x15cm)</CardTitle>
+              <CardTitle className="text-sm">Declaração de Conteúdo</CardTitle>
             </CardHeader>
             <CardContent>
               <div 
+                ref={declRef}
                 className="border p-4 bg-white"
                 style={{
                   width: '100%',
@@ -364,10 +467,4 @@ export function LabelPrinter({ order, onClose }: LabelPrinterProps) {
   );
 }
 
-// Função auxiliar para formatar moeda
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value);
-}
+// Removido export no bottom

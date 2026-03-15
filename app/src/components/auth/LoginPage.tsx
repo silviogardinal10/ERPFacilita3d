@@ -131,7 +131,7 @@ export function LoginPage() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-slate-400 text-sm">
-          <p>© 2024 ERP 3D Shopee. Todos os direitos reservados.</p>
+          <p>© 2024 ERP Facilita 3D. Todos os direitos reservados.</p>
         </div>
       </div>
     </div>

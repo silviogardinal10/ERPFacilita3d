@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Calculator,
@@ -8,7 +8,8 @@ import {
   Settings,
   Menu,
   LogOut,
-  Users
+  Users,
+  Printer
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -27,10 +28,10 @@ import { ShopeePricing } from '@/components/pricing/ShopeePricing';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { LabelPrinter } from '@/components/labels/LabelPrinter';
 import { BulkLabelPrinter } from '@/components/labels/BulkLabelPrinter';
+import { PrintTab } from '@/components/dashboard/PrintTab';
 import { SettingsPage } from '@/components/settings/SettingsPage';
 import { LoginPage } from '@/components/auth/LoginPage';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import { use3DProducts, type Product3D } from '@/hooks/use3DProducts';
 import { useOrderManagement } from '@/hooks/useOrderManagement';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { ProductsTab } from '@/components/products/ProductsTab';
@@ -45,8 +46,55 @@ function AppContent() {
   const [selectedProductCost, setSelectedProductCost] = useState<number>(0);
 
   const { user, logout, isAuthenticated, isLoading } = useAuth();
-  const { products } = use3DProducts();
   const { orders, getOrderById } = useOrderManagement();
+
+  // Auto-logout effect
+  useEffect(() => {
+    let inactivityTimer: ReturnType<typeof setTimeout>;
+
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      // 30 minutes of inactivity
+      inactivityTimer = setTimeout(() => {
+        if (isAuthenticated) {
+          logout();
+        }
+      }, 30 * 60 * 1000); 
+    };
+
+    // Listeners for user activity
+    window.addEventListener('mousemove', resetTimer);
+    window.addEventListener('keydown', resetTimer);
+    window.addEventListener('scroll', resetTimer);
+    window.addEventListener('click', resetTimer);
+
+    // Initial timer start
+    resetTimer();
+
+    // Event for closing/refreshing the page to optionally logout
+    // For many apps, just relying on the session token expiry is enough,
+    // but the request asked to logout when closing the page. 
+    // Usually, sessionStorage is better for this, but since the system
+    // uses localStorage currently, we'll clear it on beforeunload if we haven't checked 'remember me'.
+    // However, handling beforeunload for exact 'close' versus 'refresh' is tricky. 
+    // A robust way without changing the storage type is a simple event listener:
+    const handleBeforeUnload = () => {
+      // Removing the token on close. This will also run on refresh, 
+      // requiring user to login again whenever the tab closes/refreshes.
+      logout();
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      clearTimeout(inactivityTimer);
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('keydown', resetTimer);
+      window.removeEventListener('scroll', resetTimer);
+      window.removeEventListener('click', resetTimer);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isAuthenticated, logout]);
 
   const handlePrintLabel = (orderId: string) => {
     setSelectedOrderId(orderId);
@@ -57,12 +105,7 @@ function AppContent() {
     setIsBulkPrintOpen(true);
   };
 
-  const handleProductSaved = (product: Product3D) => {
-    // Opcional: mostrar notificação ou fazer algo quando um produto é salvo
-    console.log('Produto salvo:', product);
-  };
-
-  const handleSelectProduct = (product: Product3D) => {
+  const handleSelectProduct = (product: any) => {
     setSelectedProductCost(product.totalCost);
   };
 
@@ -70,6 +113,7 @@ function AppContent() {
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'print', label: 'Impressão', icon: Printer },
     { id: 'calculator', label: 'Custo 3D', icon: Calculator },
     { id: 'products', label: 'Produtos', icon: Box },
     { id: 'pricing', label: 'Precificação', icon: Tag },
@@ -103,8 +147,8 @@ function AppContent() {
             <Box className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="font-bold text-lg text-slate-900">ERP 3D</h1>
-            <p className="text-xs text-slate-500">Gestão Shopee</p>
+            <h1 className="font-bold text-lg text-slate-900">ERP Facilita 3D</h1>
+            <p className="text-xs text-slate-500">Gestão Multiseller</p>
           </div>
         </div>
       </div>
@@ -124,11 +168,6 @@ function AppContent() {
             >
               <Icon className="h-5 w-5" />
               {item.label}
-              {item.id === 'calculator' && products.length > 0 && (
-                <Badge variant="secondary" className="ml-auto text-xs">
-                  {products.length}
-                </Badge>
-              )}
             </button>
           );
         })}
@@ -203,7 +242,7 @@ function AppContent() {
               <Box className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-slate-900">ERP 3D</h1>
+              <h1 className="font-bold text-slate-900">ERP Facilita 3D</h1>
             </div>
           </div>
           <Avatar className="h-8 w-8">
@@ -219,20 +258,25 @@ function AppContent() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="hidden">
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+              <TabsTrigger value="print">Impressão</TabsTrigger>
               <TabsTrigger value="calculator">Custo 3D</TabsTrigger>
               <TabsTrigger value="pricing">Precificação</TabsTrigger>
               <TabsTrigger value="settings">Configurações</TabsTrigger>
             </TabsList>
 
             <TabsContent value="dashboard" className="m-0">
-              <Dashboard
+              <Dashboard />
+            </TabsContent>
+
+            <TabsContent value="print" className="m-0">
+              <PrintTab 
                 onPrintLabel={handlePrintLabel}
                 onBulkPrint={handleBulkPrint}
               />
             </TabsContent>
 
             <TabsContent value="calculator" className="m-0">
-              <Cost3DCalculator onProductSaved={handleProductSaved} />
+              <Cost3DCalculator onProductSaved={() => {}} />
             </TabsContent>
 
             <TabsContent value="pricing" className="m-0">

@@ -19,7 +19,9 @@ import {
   EyeOff,
   Loader2,
   RefreshCw,
-  TestTube
+  TestTube,
+  Smartphone,
+  ShoppingBasket
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import api from '@/lib/api';
@@ -44,9 +46,12 @@ const defaultShopeeConfig: ShopeeConfig = {
   sandboxMode: true,
 };
 
+// Configurações simplificadas para exemplo
 export function SettingsPage() {
   const { user, changePassword } = useAuth();
   const [shopeeConfig, setShopeeConfig] = useState<ShopeeConfig>(defaultShopeeConfig);
+  const [tiktokActive, setTiktokActive] = useState(false);
+  const [temuActive, setTemuActive] = useState(false);
 
   // Estados para troca de senha
   const [currentPassword, setCurrentPassword] = useState('');
@@ -169,10 +174,18 @@ export function SettingsPage() {
       </div>
 
       <Tabs defaultValue="shopee" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
           <TabsTrigger value="shopee" className="gap-2">
             <Store className="h-4 w-4" />
-            API Shopee
+            Shopee
+          </TabsTrigger>
+          <TabsTrigger value="tiktok" className="gap-2">
+            <Smartphone className="h-4 w-4" />
+            TikTok
+          </TabsTrigger>
+          <TabsTrigger value="temu" className="gap-2">
+            <ShoppingBasket className="h-4 w-4" />
+            Temu
           </TabsTrigger>
           <TabsTrigger value="security" className="gap-2">
             <Lock className="h-4 w-4" />
@@ -359,6 +372,128 @@ export function SettingsPage() {
                   <li>Obtenha o Partner ID e Partner Key</li>
                   <li>Autorize o aplicativo na sua loja para obter o Shop ID</li>
                 </ol>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Configurações do TikTok Shop */}
+        <TabsContent value="tiktok" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Smartphone className="h-5 w-5 text-indigo-500" />
+                    Integração TikTok Shop
+                  </CardTitle>
+                  <CardDescription>
+                    Configure os dados para sincronização com o TikTok Shop
+                  </CardDescription>
+                </div>
+                <Badge
+                  variant={tiktokActive ? 'default' : 'secondary'}
+                  className={tiktokActive ? 'bg-emerald-100 text-emerald-800' : ''}
+                >
+                  {tiktokActive ? 'Ativa' : 'Inativa'}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="tt-app-key">App Key</Label>
+                <Input
+                  id="tt-app-key"
+                  placeholder="App Key do TikTok Shop"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="tt-app-secret">App Secret</Label>
+                <div className="relative">
+                  <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input
+                    id="tt-app-secret"
+                    type="password"
+                    placeholder="App Secret do TikTok Shop"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={tiktokActive}
+                    onCheckedChange={setTiktokActive}
+                  />
+                  <Label>Ativar integração</Label>
+                </div>
+                <Button>
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Configurações da Temu */}
+        <TabsContent value="temu" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShoppingBasket className="h-5 w-5 text-orange-600" />
+                    Integração Temu
+                  </CardTitle>
+                  <CardDescription>
+                    Configure os dados para sincronização com a Temu
+                  </CardDescription>
+                </div>
+                <Badge
+                  variant={temuActive ? 'default' : 'secondary'}
+                  className={temuActive ? 'bg-emerald-100 text-emerald-800' : ''}
+                >
+                  {temuActive ? 'Ativa' : 'Inativa'}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="temu-client-id">Client ID</Label>
+                <Input
+                  id="temu-client-id"
+                  placeholder="Client ID da Temu"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="temu-client-secret">Client Secret</Label>
+                <div className="relative">
+                  <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input
+                    id="temu-client-secret"
+                    type="password"
+                    placeholder="Secret Key da Temu"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={temuActive}
+                    onCheckedChange={setTemuActive}
+                  />
+                  <Label>Ativar integração</Label>
+                </div>
+                <Button>
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar
+                </Button>
               </div>
             </CardContent>
           </Card>

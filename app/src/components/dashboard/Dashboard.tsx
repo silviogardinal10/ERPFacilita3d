@@ -12,19 +12,14 @@ import {
   CheckCircle2,
   Truck,
   XCircle,
-  RotateCcw,
-  Printer,
-  PrinterIcon
+  RotateCcw
 } from 'lucide-react';
 import { useOrderManagement } from '@/hooks/useOrderManagement';
 import { useProductManagement } from '@/hooks/useProductManagement';
 import { formatCurrency } from '@/lib/utils';
 import type { OrderStatus } from '@/types';
 
-interface DashboardProps {
-  onPrintLabel: (orderId: string) => void;
-  onBulkPrint: () => void;
-}
+interface DashboardProps {}
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; icon: React.ElementType }> = {
   pending: { label: 'Pendente', color: 'bg-amber-100 text-amber-800', icon: Clock },
@@ -35,7 +30,7 @@ const statusConfig: Record<OrderStatus, { label: string; color: string; icon: Re
   returned: { label: 'Devolvido', color: 'bg-slate-100 text-slate-800', icon: RotateCcw },
 };
 
-export function Dashboard({ onPrintLabel, onBulkPrint }: DashboardProps) {
+export function Dashboard({ }: DashboardProps) {
   const { stats, recentOrders, pendingOrdersList, updateOrderStatus } = useOrderManagement();
   const { lowStockProducts, totalActiveProducts, totalStockValue } = useProductManagement();
 
@@ -142,15 +137,6 @@ export function Dashboard({ onPrintLabel, onBulkPrint }: DashboardProps) {
                 <ShoppingBag className="h-5 w-5" />
                 Pedidos Recentes
               </CardTitle>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onBulkPrint}
-                className="gap-2"
-              >
-                <PrinterIcon className="h-4 w-4" />
-                Impressão em Massa
-              </Button>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -213,13 +199,6 @@ export function Dashboard({ onPrintLabel, onBulkPrint }: DashboardProps) {
                                   Enviar
                                 </Button>
                               )}
-                              <Button 
-                                size="sm" 
-                                variant="ghost"
-                                onClick={() => onPrintLabel(order.id)}
-                              >
-                                <Printer className="h-4 w-4" />
-                              </Button>
                             </div>
                           </td>
                         </tr>

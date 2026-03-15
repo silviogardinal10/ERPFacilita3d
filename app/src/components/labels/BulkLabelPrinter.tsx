@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -31,7 +32,10 @@ const statusConfig: Record<OrderStatus, { label: string; color: string }> = {
   returned: { label: 'Devolvido', color: 'bg-slate-100 text-slate-800' },
 };
 
+export type BulkPrintLayout = '10x15' | 'a4-grid';
+
 export function BulkLabelPrinter({ orders, onClose }: BulkLabelPrinterProps) {
+  const [layout, setLayout] = useState<BulkPrintLayout>('10x15');
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [isPrinting, setIsPrinting] = useState(false);
   const [printProgress, setPrintProgress] = useState(0);
@@ -74,113 +78,120 @@ export function BulkLabelPrinter({ orders, onClose }: BulkLabelPrinterProps) {
       setPrintProgress(Math.round(((i + 1) / total) * 100));
     }
 
-    // Abrir janela de impressão
-    const printWindow = window.open('', '_blank');
-    if (printWindow && labelContainerRef.current) {
-      const labelsHtml = selectedOrdersList.map(order => generateLabelHtml(order)).join('');
-      
-      printWindow.document.write(`
+    // Generate HTML based on layout
+    let htmlContent = '';
+    
+    if (layout === '10x15') {
+      const labelsHtml = selectedOrdersList.map(order => generateLabelHtml(order, '10x15')).join('');
+      htmlContent = `
         <!DOCTYPE html>
         <html>
           <head>
             <title>Etiquetas - ${selectedOrders.size} pedidos</title>
             <style>
-              @page {
-                size: 100mm 150mm;
-                margin: 0;
-              }
-              * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-              }
-              body {
-                font-family: Arial, sans-serif;
-                font-size: 10pt;
-                line-height: 1.3;
-              }
+              @page { size: 100mm 150mm; margin: 0; }
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.3; }
               .label-page {
-                width: 100mm;
-                height: 150mm;
-                padding: 4mm;
-                border: 1px solid #000;
-                page-break-after: always;
-                page-break-inside: avoid;
+                width: 100mm; height: 150mm; padding: 4mm; border: 1px solid #000;
+                page-break-after: always; page-break-inside: avoid;
               }
-              .label-page:last-child {
-                page-break-after: auto;
-              }
-              .header {
-                text-align: center;
-                border-bottom: 2px solid #000;
-                padding-bottom: 2mm;
-                margin-bottom: 3mm;
-              }
-              .order-number {
-                font-size: 14pt;
-                font-weight: bold;
-              }
-              .shopee-id {
-                font-size: 9pt;
-                color: #666;
-              }
-              .section {
-                margin-bottom: 3mm;
-              }
-              .section-title {
-                font-weight: bold;
-                font-size: 9pt;
-                border-bottom: 1px solid #ccc;
-                margin-bottom: 1mm;
-              }
-              .customer-name {
-                font-size: 12pt;
-                font-weight: bold;
-              }
-              .address {
-                font-size: 9pt;
-              }
-              .products-table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 9pt;
-              }
-              .products-table th,
-              .products-table td {
-                border: 1px solid #000;
-                padding: 1mm;
-                text-align: left;
-              }
-              .products-table th {
-                background: #f0f0f0;
-              }
-              .footer {
-                margin-top: 3mm;
-                padding-top: 2mm;
-                border-top: 1px solid #000;
-                font-size: 8pt;
-                text-align: center;
-              }
-              .qr-placeholder {
-                width: 20mm;
-                height: 20mm;
-                border: 1px solid #000;
-                margin: 2mm auto;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 8pt;
-              }
-              @media print {
-                body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-              }
+              .label-page:last-child { page-break-after: auto; }
+              .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 2mm; margin-bottom: 3mm; }
+              .order-number { font-size: 14pt; font-weight: bold; }
+              .shopee-id { font-size: 9pt; color: #666; }
+              .section { margin-bottom: 3mm; }
+              .section-title { font-weight: bold; font-size: 9pt; border-bottom: 1px solid #ccc; margin-bottom: 1mm; }
+              .customer-name { font-size: 12pt; font-weight: bold; }
+              .products-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+              .products-table th, .products-table td { border: 1px solid #000; padding: 1mm; text-align: left; }
+              .products-table th { background: #f0f0f0; }
+              .footer { margin-top: 3mm; padding-top: 2mm; border-top: 1px solid #000; font-size: 8pt; text-align: center; }
+              .qr-placeholder { width: 20mm; height: 20mm; border: 1px solid #000; margin: 2mm auto; display: flex; align-items: center; justify-content: center; font-size: 8pt; }
+              @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
             </style>
           </head>
-          <body>
-            ${labelsHtml}
-          </body>
+          <body>${labelsHtml}</body>
         </html>
-      `);
+      `;
+    } else if (layout === 'a4-grid') {
+      // Chunk orders into groups of 4 for each A4 page
+      const chunkedOrders = [];
+      for (let i = 0; i < selectedOrdersList.length; i += 4) {
+        chunkedOrders.push(selectedOrdersList.slice(i, i + 4));
+      }
+
+      const pagesHtml = chunkedOrders.map(pageOrders => {
+        const labelsHtml = pageOrders.map(order => generateLabelHtml(order, 'a4')).join('');
+        return `<div class="a4-page"><div class="a4-grid">${labelsHtml}</div></div>`;
+      }).join('');
+
+      htmlContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Etiquetas A4 - ${selectedOrders.size} pedidos</title>
+            <style>
+              @page { size: A4; margin: 10mm; }
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.3; }
+              .a4-page {
+                width: 210mm;
+                height: 297mm;
+                page-break-after: always;
+                page-break-inside: avoid;
+                box-sizing: border-box;
+              }
+              .a4-page:last-child { page-break-after: auto; }
+              .a4-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: 1fr 1fr;
+                gap: 5mm;
+                height: 100%;
+                width: 100%;
+              }
+              .label-wrapper {
+                border: 1px dashed #ccc;
+                padding: 2mm;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                overflow: hidden;
+              }
+              .label-content {
+                width: 100mm;
+                height: 150mm;
+                border: 1px solid #000;
+                padding: 4mm;
+                /* Scale down cleanly to fit half A4 width/height with padding */
+                transform: scale(0.9);
+                transform-origin: center center;
+              }
+              /* Shared Label internal styles */
+              .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 2mm; margin-bottom: 3mm; }
+              .order-number { font-size: 14pt; font-weight: bold; }
+              .shopee-id { font-size: 9pt; color: #666; }
+              .section { margin-bottom: 3mm; }
+              .section-title { font-weight: bold; font-size: 9pt; border-bottom: 1px solid #ccc; margin-bottom: 1mm; }
+              .customer-name { font-size: 12pt; font-weight: bold; }
+              .products-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+              .products-table th, .products-table td { border: 1px solid #000; padding: 1mm; text-align: left; }
+              .products-table th { background: #f0f0f0; }
+              .footer { margin-top: 3mm; padding-top: 2mm; border-top: 1px solid #000; font-size: 8pt; text-align: center; }
+              .qr-placeholder { width: 20mm; height: 20mm; border: 1px solid #000; margin: 2mm auto; display: flex; align-items: center; justify-content: center; font-size: 8pt; }
+              @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+            </style>
+          </head>
+          <body>${pagesHtml}</body>
+        </html>
+      `;
+    }
+    
+    // Abrir janela de impressão
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
       
       printWindow.document.close();
       printWindow.focus();
@@ -194,56 +205,61 @@ export function BulkLabelPrinter({ orders, onClose }: BulkLabelPrinterProps) {
   };
 
   // Gerar HTML de uma etiqueta
-  const generateLabelHtml = (order: Order) => {
-    return `
-      <div class="label-page">
-        <div class="header">
-          <div class="order-number">${order.orderNumber}</div>
-          ${order.shopeeOrderId ? `<div class="shopee-id">Shopee: ${order.shopeeOrderId}</div>` : ''}
-        </div>
+  const generateLabelHtml = (order: Order, format: '10x15' | 'a4') => {
+    const innerHtml = `
+      <div class="header">
+        <div class="order-number">${order.orderNumber}</div>
+        ${order.shopeeOrderId ? `<div class="shopee-id">Shopee: ${order.shopeeOrderId}</div>` : ''}
+      </div>
 
-        <div class="section">
-          <div class="section-title">DESTINATÁRIO</div>
-          <div class="customer-name">${order.customer.name}</div>
-          <div>${order.customer.phone}</div>
-          <div style="margin-top: 1mm;">
-            ${order.customer.address.street}, ${order.customer.address.number}
-            ${order.customer.address.complement ? ` - ${order.customer.address.complement}` : ''}
-          </div>
-          <div>${order.customer.address.neighborhood}</div>
-          <div>${order.customer.address.city} - ${order.customer.address.state}</div>
-          <div style="font-weight: bold;">CEP: ${order.customer.address.zipCode}</div>
+      <div class="section">
+        <div class="section-title">DESTINATÁRIO</div>
+        <div class="customer-name">${order.customer.name}</div>
+        <div>${order.customer.phone}</div>
+        <div style="margin-top: 1mm;">
+          ${order.customer.address.street}, ${order.customer.address.number}
+          ${order.customer.address.complement ? ` - ${order.customer.address.complement}` : ''}
         </div>
+        <div>${order.customer.address.neighborhood}</div>
+        <div>${order.customer.address.city} - ${order.customer.address.state}</div>
+        <div style="font-weight: bold;">CEP: ${order.customer.address.zipCode}</div>
+      </div>
 
-        <div class="section">
-          <div class="section-title">CONTEÚDO</div>
-          <table class="products-table">
-            <thead>
+      <div class="section">
+        <div class="section-title">CONTEÚDO</div>
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th>Qtd</th>
+              <th>Produto</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${order.items.map(item => `
               <tr>
-                <th>Qtd</th>
-                <th>Produto</th>
+                <td>${item.quantity}x</td>
+                <td>${item.productName}</td>
               </tr>
-            </thead>
-            <tbody>
-              ${order.items.map(item => `
-                <tr>
-                  <td>${item.quantity}x</td>
-                  <td>${item.productName}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
 
-        <div class="qr-placeholder">QR CODE</div>
+      <div class="qr-placeholder">QR CODE</div>
 
-        <div class="footer">
-          <p>Obrigado pela compra!</p>
-          ${order.notes ? `<p>Obs: ${order.notes}</p>` : ''}
-          ${order.trackingCode ? `<p>Rastreio: ${order.trackingCode}</p>` : ''}
-        </div>
+      <div class="footer">
+        <p>Obrigado pela compra!</p>
+        ${order.notes ? `<p>Obs: ${order.notes}</p>` : ''}
+        ${order.trackingCode ? `<p>Rastreio: ${order.trackingCode}</p>` : ''}
       </div>
     `;
+
+    if (format === '10x15') {
+      return `<div class="label-page">${innerHtml}</div>`;
+    } else {
+      // Wrapper for A4 grid item
+      return `<div class="label-wrapper"><div class="label-content">${innerHtml}</div></div>`;
+    }
   };
 
   // Exportar lista de pedidos
@@ -273,11 +289,22 @@ export function BulkLabelPrinter({ orders, onClose }: BulkLabelPrinterProps) {
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
-          <div>
-            <h3 className="text-lg font-semibold">Impressão em Massa</h3>
-            <p className="text-sm text-slate-500">
-              {selectedOrders.size} de {orders.length} pedidos selecionados
-            </p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h3 className="text-lg font-semibold">Impressão em Massa</h3>
+              <p className="text-sm text-slate-500">
+                {selectedOrders.size} de {orders.length} pedidos selecionados
+              </p>
+            </div>
+            <Select value={layout} onValueChange={(val: BulkPrintLayout) => setLayout(val)}>
+              <SelectTrigger className="w-[280px]">
+                <SelectValue placeholder="Formato de Impressão" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10x15">Apenas Etiquetas (Térmica 10x15)</SelectItem>
+                <SelectItem value="a4-grid">Etiquetas Agrupadas (4 por Folha A4)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-5 w-5" />
