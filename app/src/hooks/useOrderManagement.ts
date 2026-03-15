@@ -1,165 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { Order, OrderStatus, PaymentStatus, DashboardStats } from '@/types';
 
-// Dados mockados iniciais
-const mockOrders: Order[] = [
-  {
-    id: '1',
-    orderNumber: 'PED-2024-001',
-    customer: {
-      id: 'c1',
-      name: 'João Silva',
-      email: 'joao@email.com',
-      phone: '(11) 98765-4321',
-      address: {
-        street: 'Rua das Flores',
-        number: '123',
-        complement: 'Apto 45',
-        neighborhood: 'Centro',
-        city: 'São Paulo',
-        state: 'SP',
-        zipCode: '01000-000',
-      },
-    },
-    items: [
-      {
-        productId: '1',
-        productName: 'Suporte para Celular',
-        quantity: 2,
-        unitPrice: 29.90,
-        totalPrice: 59.80,
-      },
-    ],
-    subtotal: 59.80,
-    shippingCost: 15.00,
-    discount: 0,
-    total: 74.80,
-    status: 'delivered',
-    paymentStatus: 'paid',
-    shopeeOrderId: '240301ABC123',
-    trackingCode: 'BR123456789XX',
-    notes: 'Cliente pediu embalagem para presente',
-    createdAt: new Date('2024-03-01'),
-    updatedAt: new Date('2024-03-05'),
-  },
-  {
-    id: '2',
-    orderNumber: 'PED-2024-002',
-    customer: {
-      id: 'c2',
-      name: 'Maria Santos',
-      email: 'maria@email.com',
-      phone: '(11) 91234-5678',
-      address: {
-        street: 'Av. Principal',
-        number: '456',
-        neighborhood: 'Jardim',
-        city: 'São Paulo',
-        state: 'SP',
-        zipCode: '02000-000',
-      },
-    },
-    items: [
-      {
-        productId: '3',
-        productName: 'Chaveiro Personalizado',
-        quantity: 3,
-        unitPrice: 15.90,
-        totalPrice: 47.70,
-      },
-      {
-        productId: '2',
-        productName: 'Porta Canetas',
-        quantity: 1,
-        unitPrice: 39.90,
-        totalPrice: 39.90,
-      },
-    ],
-    subtotal: 87.60,
-    shippingCost: 12.00,
-    discount: 8.76,
-    total: 90.84,
-    status: 'shipped',
-    paymentStatus: 'paid',
-    shopeeOrderId: '240302DEF456',
-    trackingCode: 'BR987654321XX',
-    notes: '',
-    createdAt: new Date('2024-03-02'),
-    updatedAt: new Date('2024-03-04'),
-  },
-  {
-    id: '3',
-    orderNumber: 'PED-2024-003',
-    customer: {
-      id: 'c3',
-      name: 'Pedro Costa',
-      email: 'pedro@email.com',
-      phone: '(11) 94567-8901',
-      address: {
-        street: 'Rua do Comércio',
-        number: '789',
-        neighborhood: 'Bela Vista',
-        city: 'São Paulo',
-        state: 'SP',
-        zipCode: '03000-000',
-      },
-    },
-    items: [
-      {
-        productId: '1',
-        productName: 'Suporte para Celular',
-        quantity: 1,
-        unitPrice: 29.90,
-        totalPrice: 29.90,
-      },
-    ],
-    subtotal: 29.90,
-    shippingCost: 15.00,
-    discount: 0,
-    total: 44.90,
-    status: 'processing',
-    paymentStatus: 'paid',
-    notes: 'Aguardando impressão',
-    createdAt: new Date('2024-03-05'),
-    updatedAt: new Date('2024-03-05'),
-  },
-  {
-    id: '4',
-    orderNumber: 'PED-2024-004',
-    customer: {
-      id: 'c4',
-      name: 'Ana Oliveira',
-      email: 'ana@email.com',
-      phone: '(11) 97890-1234',
-      address: {
-        street: 'Rua das Palmeiras',
-        number: '321',
-        neighborhood: 'Vila Nova',
-        city: 'São Paulo',
-        state: 'SP',
-        zipCode: '04000-000',
-      },
-    },
-    items: [
-      {
-        productId: '2',
-        productName: 'Porta Canetas',
-        quantity: 2,
-        unitPrice: 39.90,
-        totalPrice: 79.80,
-      },
-    ],
-    subtotal: 79.80,
-    shippingCost: 12.00,
-    discount: 7.98,
-    total: 83.82,
-    status: 'pending',
-    paymentStatus: 'pending',
-    notes: '',
-    createdAt: new Date('2024-03-06'),
-    updatedAt: new Date('2024-03-06'),
-  },
-];
+const mockOrders: Order[] = [];
 
 export function useOrderManagement() {
   const [orders, setOrders] = useState<Order[]>(mockOrders);
@@ -175,6 +17,22 @@ export function useOrderManagement() {
       .reduce((acc, o) => acc + (o.total * 0.3), 0); // Estimativa de 30% lucro
     const pendingOrders = orders.filter(o => o.status === 'pending' || o.status === 'processing').length;
     
+    // Estatísticas por plataforma
+    const getPlatformStats = (platformName: 'shopee' | 'tiktok' | 'temu') => {
+      const platformOrders = orders.filter(o => o.platform === platformName);
+      return {
+        totalSales: platformOrders.filter(o => o.status === 'delivered').length,
+        totalRevenue: platformOrders.filter(o => o.paymentStatus === 'paid').reduce((acc, o) => acc + o.total, 0),
+        pendingOrders: platformOrders.filter(o => o.status === 'pending' || o.status === 'processing').length,
+      };
+    };
+
+    const platforms = {
+      shopee: getPlatformStats('shopee'),
+      tiktok: getPlatformStats('tiktok'),
+      temu: getPlatformStats('temu'),
+    };
+
     // Crescimento mensal (simulado)
     const monthlyGrowth = 15.5;
 
@@ -185,6 +43,7 @@ export function useOrderManagement() {
       pendingOrders,
       lowStockProducts: 0, // Será preenchido pelo useProductManagement
       monthlyGrowth,
+      platforms,
     };
   }, [orders]);
 

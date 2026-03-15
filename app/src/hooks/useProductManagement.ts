@@ -1,84 +1,9 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { Product, StockMovement } from '@/types';
 
-// Dados mockados iniciais
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Suporte para Celular',
-    description: 'Suporte ajustável para celular',
-    sku: 'SUP-001',
-    category: 'Acessórios',
-    stockQuantity: 15,
-    minStockLevel: 5,
-    manufacturingCost: 8.50,
-    suggestedPrice: 25.90,
-    finalPrice: 29.90,
-    weight: 80,
-    dimensions: { length: 12, width: 8, height: 10 },
-    images: [],
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-15'),
-    isActive: true,
-  },
-  {
-    id: '2',
-    name: 'Porta Canetas',
-    description: 'Organizador de mesa para canetas',
-    sku: 'PORT-002',
-    category: 'Organização',
-    stockQuantity: 8,
-    minStockLevel: 10,
-    manufacturingCost: 12.00,
-    suggestedPrice: 35.90,
-    finalPrice: 39.90,
-    weight: 120,
-    dimensions: { length: 15, width: 10, height: 12 },
-    images: [],
-    createdAt: new Date('2024-01-20'),
-    updatedAt: new Date('2024-01-20'),
-    isActive: true,
-  },
-  {
-    id: '3',
-    name: 'Chaveiro Personalizado',
-    description: 'Chaveiro com nome personalizado',
-    sku: 'CHAV-003',
-    category: 'Personalizados',
-    stockQuantity: 25,
-    minStockLevel: 8,
-    manufacturingCost: 3.50,
-    suggestedPrice: 12.90,
-    finalPrice: 15.90,
-    weight: 15,
-    dimensions: { length: 6, width: 3, height: 0.5 },
-    images: [],
-    createdAt: new Date('2024-02-01'),
-    updatedAt: new Date('2024-02-01'),
-    isActive: true,
-  },
-];
+const mockProducts: Product[] = [];
 
-const mockStockMovements: StockMovement[] = [
-  {
-    id: '1',
-    productId: '1',
-    productName: 'Suporte para Celular',
-    type: 'out',
-    quantity: 2,
-    reason: 'Venda #1234',
-    createdAt: new Date('2024-03-01'),
-  },
-  {
-    id: '2',
-    productId: '2',
-    productName: 'Porta Canetas',
-    type: 'out',
-    quantity: 1,
-    reason: 'Venda #1235',
-    createdAt: new Date('2024-03-01'),
-  },
-];
+const mockStockMovements: StockMovement[] = [];
 
 export function useProductManagement() {
   const [products, setProducts] = useState<Product[]>(mockProducts);

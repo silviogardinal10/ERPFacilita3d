@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   TrendingUp, 
@@ -33,18 +35,47 @@ const statusConfig: Record<OrderStatus, { label: string; color: string; icon: Re
 export function Dashboard({ }: DashboardProps) {
   const { stats, recentOrders, pendingOrdersList, updateOrderStatus } = useOrderManagement();
   const { lowStockProducts, totalActiveProducts, totalStockValue } = useProductManagement();
+  const [platformFilter, setPlatformFilter] = useState<'all' | 'shopee' | 'tiktok' | 'temu'>('all');
 
   const combinedStats = {
     ...stats,
     lowStockProducts: lowStockProducts.length,
   };
 
+  const displayStats = platformFilter === 'all' 
+    ? combinedStats 
+    : {
+        totalSales: combinedStats.platforms?.[platformFilter]?.totalSales || 0,
+        totalRevenue: combinedStats.platforms?.[platformFilter]?.totalRevenue || 0,
+        totalProfit: (combinedStats.platforms?.[platformFilter]?.totalRevenue || 0) * 0.3,
+        pendingOrders: combinedStats.platforms?.[platformFilter]?.pendingOrders || 0,
+        lowStockProducts: combinedStats.lowStockProducts,
+        monthlyGrowth: combinedStats.monthlyGrowth
+      };
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-slate-900">Dashboard</h2>
-        <p className="text-slate-500">Visão geral do seu negócio</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900">Dashboard</h2>
+          <p className="text-slate-500">Visão geral do seu negócio</p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-slate-500">Filtrar por Conta:</span>
+          <Select value={platformFilter} onValueChange={(val: any) => setPlatformFilter(val)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Todas as Contas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as Contas</SelectItem>
+              <SelectItem value="shopee">Shopee</SelectItem>
+              <SelectItem value="tiktok">TikTok Shop</SelectItem>
+              <SelectItem value="temu">Temu</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -54,7 +85,7 @@ export function Dashboard({ }: DashboardProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-500">Vendas Totais</p>
-                <p className="text-2xl font-bold">{combinedStats.totalSales}</p>
+                <p className="text-2xl font-bold">{displayStats.totalSales}</p>
               </div>
               <div className="h-12 w-12 bg-emerald-100 rounded-full flex items-center justify-center">
                 <ShoppingBag className="h-6 w-6 text-emerald-600" />
@@ -62,7 +93,7 @@ export function Dashboard({ }: DashboardProps) {
             </div>
             <div className="flex items-center gap-1 mt-4 text-sm">
               <TrendingUp className="h-4 w-4 text-emerald-600" />
-              <span className="text-emerald-600 font-medium">+{combinedStats.monthlyGrowth}%</span>
+              <span className="text-emerald-600 font-medium">+{displayStats.monthlyGrowth}%</span>
               <span className="text-slate-500">este mês</span>
             </div>
           </CardContent>
@@ -73,7 +104,7 @@ export function Dashboard({ }: DashboardProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-500">Receita Total</p>
-                <p className="text-2xl font-bold">{formatCurrency(combinedStats.totalRevenue)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(displayStats.totalRevenue)}</p>
               </div>
               <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
                 <DollarSign className="h-6 w-6 text-blue-600" />
@@ -81,7 +112,7 @@ export function Dashboard({ }: DashboardProps) {
             </div>
             <div className="flex items-center gap-1 mt-4 text-sm">
               <span className="text-slate-500">Lucro estimado:</span>
-              <span className="text-emerald-600 font-medium">{formatCurrency(combinedStats.totalProfit)}</span>
+              <span className="text-emerald-600 font-medium">{formatCurrency(displayStats.totalProfit)}</span>
             </div>
           </CardContent>
         </Card>
@@ -91,7 +122,7 @@ export function Dashboard({ }: DashboardProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-500">Pedidos Pendentes</p>
-                <p className="text-2xl font-bold">{combinedStats.pendingOrders}</p>
+                <p className="text-2xl font-bold">{displayStats.pendingOrders}</p>
               </div>
               <div className="h-12 w-12 bg-amber-100 rounded-full flex items-center justify-center">
                 <Clock className="h-6 w-6 text-amber-600" />
@@ -108,7 +139,7 @@ export function Dashboard({ }: DashboardProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-500">Estoque Baixo</p>
-                <p className="text-2xl font-bold">{combinedStats.lowStockProducts}</p>
+                <p className="text-2xl font-bold">{displayStats.lowStockProducts}</p>
               </div>
               <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center">
                 <AlertTriangle className="h-6 w-6 text-red-600" />

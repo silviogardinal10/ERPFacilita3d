@@ -121,6 +121,7 @@ export interface Order {
   paymentStatus: PaymentStatus;
   shopeeOrderId?: string;
   trackingCode?: string;
+  platform?: 'shopee' | 'tiktok' | 'temu';
   notes: string;
   createdAt: Date;
   updatedAt: Date;
@@ -162,6 +163,12 @@ export interface LabelData {
 
 // ==================== DASHBOARD ====================
 
+export interface PlatformStats {
+  totalSales: number;
+  totalRevenue: number;
+  pendingOrders: number;
+}
+
 export interface DashboardStats {
   totalSales: number;
   totalRevenue: number;
@@ -169,6 +176,11 @@ export interface DashboardStats {
   pendingOrders: number;
   lowStockProducts: number;
   monthlyGrowth: number;
+  platforms: {
+    shopee: PlatformStats;
+    tiktok: PlatformStats;
+    temu: PlatformStats;
+  };
 }
 
 export interface StockMovement {

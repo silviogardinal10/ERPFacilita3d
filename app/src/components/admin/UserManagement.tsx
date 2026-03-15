@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Users } from 'lucide-react';
+import { Loader2, Plus, Users, Trash2, Power, PowerOff } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -15,6 +15,7 @@ interface UserData {
     name: string;
     email: string;
     role: string;
+    isActive: boolean;
     createdAt: string;
 }
 
@@ -68,6 +69,35 @@ export function UserManagement() {
             setError(err.response?.data?.error || 'Erro ao criar usuário');
         } finally {
             setIsCreating(false);
+        }
+    };
+
+    const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
+        try {
+            await api.put(`/users/${userId}/status`, { isActive: !currentStatus });
+            // Atualizar o usuário na lista localmente para evitar uma nova requisição
+            setUsers(prev => prev.map(u => 
+                u.id === userId ? { ...u, isActive: !currentStatus } : u
+            ));
+        } catch (err: any) {
+            console.error('Erro ao alterar status do usuário', err);
+            // Mostrar um alerta ou notificação (simplificado aqui por limite de dependências)
+            alert(err.response?.data?.error || 'Erro ao alterar status do usuário');
+        }
+    };
+
+    const handleDeleteUser = async (userId: string) => {
+        if (!window.confirm('Tem certeza que deseja remover este usuário? Esta ação não pode ser desfeita.')) {
+            return;
+        }
+
+        try {
+            await api.delete(`/users/${userId}`);
+            // Remover o usuário da lista localmente
+            setUsers(prev => prev.filter(u => u.id !== userId));
+        } catch (err: any) {
+            console.error('Erro ao remover usuário', err);
+            alert(err.response?.data?.error || 'Erro ao deletar usuário');
         }
     };
 
@@ -158,8 +188,10 @@ export function UserManagement() {
                                         <TableRow>
                                             <TableHead>Nome</TableHead>
                                             <TableHead>Email</TableHead>
+                                            <TableHead>Status</TableHead>
                                             <TableHead>Permissão</TableHead>
                                             <TableHead>Data Cadastro</TableHead>
+                                            <TableHead className="text-right">Ações</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -168,12 +200,37 @@ export function UserManagement() {
                                                 <TableCell className="font-medium text-slate-900">{u.name}</TableCell>
                                                 <TableCell className="text-slate-600 truncate max-w-[150px]">{u.email}</TableCell>
                                                 <TableCell>
+                                                    <Badge variant={u.isActive ? 'default' : 'secondary'} className={u.isActive ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-100' : 'bg-slate-100 text-slate-800'}>
+                                                        {u.isActive ? 'Ativo' : 'Inativo'}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>
                                                     <Badge variant={u.role === 'admin' ? 'default' : 'secondary'} className={u.role === 'admin' ? 'bg-blue-100 text-blue-800 hover:bg-blue-100' : ''}>
                                                         {u.role === 'admin' ? 'Admin' : 'Usuário'}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-slate-500 text-sm">
                                                     {new Date(u.createdAt).toLocaleDateString()}
+                                                </TableCell>
+                                                <TableCell className="text-right space-x-2 w-[120px]">
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        title={u.isActive ? "Desativar" : "Reativar"}
+                                                        onClick={() => handleToggleStatus(u.id, u.isActive)}
+                                                        className={u.isActive ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50" : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"}
+                                                    >
+                                                        {u.isActive ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                                                    </Button>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        title="Deletar"
+                                                        onClick={() => handleDeleteUser(u.id)}
+                                                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
