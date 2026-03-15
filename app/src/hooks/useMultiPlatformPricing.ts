@@ -103,9 +103,16 @@ export function useMultiPlatformPricing(initialManufacturingCost: number = 0) {
     // Temu
     const temuObj = calcForPlatform(temuFees.commissionPercentage / 100, temuFees.fixedFee);
 
-    // Common (using Shopee base for common metrics historically, but moving to universal where possible)
-    // We'll base pure profit calc on the highest suggested price (Shopee usually) just as an indicator
-    const discountAmount = shopeeObj.suggestedPrice * (pricingConfig.discountPercentage / 100);
+    // Common
+    const discountRate = pricingConfig.discountPercentage / 100;
+    const calculateWithDiscount = (price: number) => {
+      // Divide by (1 - discountRate) to get the correct original price
+      // so that (Original * (1 - discount)) = Final Price
+      if (discountRate >= 1) return price * 2;
+      return price / (1 - discountRate);
+    };
+
+    const discountAmount = calculateWithDiscount(shopeeObj.suggestedPrice) - shopeeObj.suggestedPrice;
 
     return {
       manufacturingCost,
@@ -117,19 +124,19 @@ export function useMultiPlatformPricing(initialManufacturingCost: number = 0) {
       shopeeCommission: shopeeObj.commissionSize,
       shopeeFixedFee: shopeeFees.fixedFee,
       shopeeSuggestedPrice: shopeeObj.suggestedPrice,
-      shopeePriceWithDiscount: shopeeObj.suggestedPrice + (shopeeObj.suggestedPrice * (pricingConfig.discountPercentage / 100)),
+      shopeePriceWithDiscount: calculateWithDiscount(shopeeObj.suggestedPrice),
       shopeeBreakEven: shopeeObj.breakEvenPrice,
 
       tiktokCommission: tiktokObj.commissionSize,
       tiktokFixedFee: tiktokFees.fixedFee,
       tiktokSuggestedPrice: tiktokObj.suggestedPrice,
-      tiktokPriceWithDiscount: tiktokObj.suggestedPrice + (tiktokObj.suggestedPrice * (pricingConfig.discountPercentage / 100)),
+      tiktokPriceWithDiscount: calculateWithDiscount(tiktokObj.suggestedPrice),
       tiktokBreakEven: tiktokObj.breakEvenPrice,
 
       temuCommission: temuObj.commissionSize,
       temuFixedFee: temuFees.fixedFee,
       temuSuggestedPrice: temuObj.suggestedPrice,
-      temuPriceWithDiscount: temuObj.suggestedPrice + (temuObj.suggestedPrice * (pricingConfig.discountPercentage / 100)),
+      temuPriceWithDiscount: calculateWithDiscount(temuObj.suggestedPrice),
       temuBreakEven: temuObj.breakEvenPrice,
     };
   }, [

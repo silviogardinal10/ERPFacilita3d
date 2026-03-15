@@ -437,6 +437,8 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
                         name="Shopee"
                         theme="emerald" 
                         suggestedPrice={calculation.shopeeSuggestedPrice} 
+                        priceWithDiscount={calculation.shopeePriceWithDiscount}
+                        discountPercentage={pricingConfig.discountPercentage}
                         commission={calculation.shopeeCommission} 
                         fixedFee={calculation.shopeeFixedFee} 
                         breakEven={calculation.shopeeBreakEven}
@@ -470,6 +472,8 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
                         name="TikTok Shop"
                         theme="slate" 
                         suggestedPrice={calculation.tiktokSuggestedPrice} 
+                        priceWithDiscount={calculation.tiktokPriceWithDiscount}
+                        discountPercentage={pricingConfig.discountPercentage}
                         commission={calculation.tiktokCommission} 
                         fixedFee={calculation.tiktokFixedFee} 
                         breakEven={calculation.tiktokBreakEven}
@@ -504,6 +508,8 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
                         name="Temu"
                         theme="orange" 
                         suggestedPrice={calculation.temuSuggestedPrice} 
+                        priceWithDiscount={calculation.temuPriceWithDiscount}
+                        discountPercentage={pricingConfig.discountPercentage}
                         commission={calculation.temuCommission} 
                         fixedFee={calculation.temuFixedFee} 
                         breakEven={calculation.temuBreakEven}
@@ -521,7 +527,7 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
 }
 
 // Componente auxiliar para os resultados
-function PricingResultCard({ name, theme, suggestedPrice, commission, fixedFee, breakEven, profit, mfgCost, pkgCost }: any) {
+function PricingResultCard({ name, theme, suggestedPrice, priceWithDiscount, discountPercentage, commission, fixedFee, breakEven, profit, mfgCost, pkgCost }: any) {
     const isProfitable = suggestedPrice > breakEven;
     
     // Theme configurations
@@ -558,9 +564,21 @@ function PricingResultCard({ name, theme, suggestedPrice, commission, fixedFee, 
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-4">
-                    <div className="text-center py-2">
+                    <div className="text-center py-2 flex flex-col items-center">
                         <p className={`${t.textLight} mb-1 opacity-90`}>Para ganhar {formatCurrency(profit)} de lucro limpo:</p>
-                        <p className="text-5xl font-bold">{formatCurrency(suggestedPrice)}</p>
+                        
+                        {discountPercentage > 0 && priceWithDiscount > suggestedPrice ? (
+                            <div className="w-full bg-black/10 rounded-lg p-3 mt-2 border border-white/10">
+                                <p className="text-xs text-white/80 uppercase tracking-wider font-semibold mb-1">Cadastrar na plataforma por:</p>
+                                <p className="text-4xl font-bold mb-2">{formatCurrency(priceWithDiscount)}</p>
+                                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm mt-2">
+                                    <span className="bg-white/20 px-2 py-0.5 rounded-full text-white font-medium">-{discountPercentage}% Desconto</span>
+                                    <span className="text-white/90">Venda Final: <b>{formatCurrency(suggestedPrice)}</b></span>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-5xl font-bold mt-2">{formatCurrency(suggestedPrice)}</p>
+                        )}
                     </div>
 
                     <Separator className="bg-white/20" />
