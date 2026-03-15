@@ -21,7 +21,7 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Credenciais inválidas' });
         }
 
-        if (user.isActive === false) {
+        if ((user as any).isActive === false) {
              return res.status(403).json({ error: 'Esta conta está temporariamente desativada. Contate o administrador.' });
         }
 
