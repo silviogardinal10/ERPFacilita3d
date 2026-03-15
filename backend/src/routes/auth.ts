@@ -21,6 +21,10 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Credenciais inválidas' });
         }
 
+        if (user.isActive === false) {
+             return res.status(403).json({ error: 'Esta conta está temporariamente desativada. Contate o administrador.' });
+        }
+
         const token = jwt.sign(
             { id: user.id, email: user.email, role: user.role },
             JWT_SECRET,
