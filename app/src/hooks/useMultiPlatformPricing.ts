@@ -36,18 +36,21 @@ export interface PlatformCalculation {
   shopeeSuggestedPrice: number;
   shopeePriceWithDiscount: number;
   shopeeBreakEven: number;
+  shopeeProfit: number;
   
   tiktokCommission: number;
   tiktokFixedFee: number;
   tiktokSuggestedPrice: number;
   tiktokPriceWithDiscount: number;
   tiktokBreakEven: number;
+  tiktokProfit: number;
   
   temuCommission: number;
   temuFixedFee: number;
   temuSuggestedPrice: number;
   temuPriceWithDiscount: number;
   temuBreakEven: number;
+  temuProfit: number;
 
   manufacturingCost: number;
   totalPackagingCost: number;
@@ -86,12 +89,13 @@ export function useMultiPlatformPricing(initialManufacturingCost: number = 0) {
       }
 
       const commissionSize = suggestedPrice * commissionRate;
+      const profitSize = suggestedPrice * marginRate;
       const breakEvenDenominator = 1 - commissionRate;
       const breakEvenPrice = breakEvenDenominator > 0 
         ? (baseCost + fixedFee) / breakEvenDenominator 
         : baseCost * 2;
       
-      return { suggestedPrice, commissionSize, breakEvenPrice };
+      return { suggestedPrice, commissionSize, breakEvenPrice, profitSize };
     };
 
     // Shopee
@@ -126,18 +130,21 @@ export function useMultiPlatformPricing(initialManufacturingCost: number = 0) {
       shopeeSuggestedPrice: shopeeObj.suggestedPrice,
       shopeePriceWithDiscount: calculateWithDiscount(shopeeObj.suggestedPrice),
       shopeeBreakEven: shopeeObj.breakEvenPrice,
+      shopeeProfit: shopeeObj.profitSize,
 
       tiktokCommission: tiktokObj.commissionSize,
       tiktokFixedFee: tiktokFees.fixedFee,
       tiktokSuggestedPrice: tiktokObj.suggestedPrice,
       tiktokPriceWithDiscount: calculateWithDiscount(tiktokObj.suggestedPrice),
       tiktokBreakEven: tiktokObj.breakEvenPrice,
+      tiktokProfit: tiktokObj.profitSize,
 
       temuCommission: temuObj.commissionSize,
       temuFixedFee: temuFees.fixedFee,
       temuSuggestedPrice: temuObj.suggestedPrice,
       temuPriceWithDiscount: calculateWithDiscount(temuObj.suggestedPrice),
       temuBreakEven: temuObj.breakEvenPrice,
+      temuProfit: temuObj.profitSize,
     };
   }, [
     manufacturingCost,

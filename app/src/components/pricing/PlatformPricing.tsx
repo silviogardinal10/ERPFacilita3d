@@ -450,7 +450,7 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
                         commission={calculation.shopeeCommission} 
                         fixedFee={calculation.shopeeFixedFee} 
                         breakEven={calculation.shopeeBreakEven}
-                        profit={calculation.profitAmount}
+                        profit={calculation.shopeeProfit || calculation.profitAmount}
                         mfgCost={calculation.manufacturingCost}
                         pkgCost={calculation.totalPackagingCost}
                         savedPrice={selectedProduct?.shopeePrice}
@@ -486,7 +486,7 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
                         commission={calculation.tiktokCommission} 
                         fixedFee={calculation.tiktokFixedFee} 
                         breakEven={calculation.tiktokBreakEven}
-                        profit={calculation.profitAmount}
+                        profit={calculation.tiktokProfit || calculation.profitAmount}
                         mfgCost={calculation.manufacturingCost}
                         pkgCost={calculation.totalPackagingCost}
                         savedPrice={selectedProduct?.tiktokPrice}
@@ -523,7 +523,7 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
                         commission={calculation.temuCommission} 
                         fixedFee={calculation.temuFixedFee} 
                         breakEven={calculation.temuBreakEven}
-                        profit={calculation.profitAmount}
+                        profit={calculation.temuProfit || calculation.profitAmount}
                         mfgCost={calculation.manufacturingCost}
                         pkgCost={calculation.totalPackagingCost}
                         savedPrice={selectedProduct?.temuPrice}
@@ -539,7 +539,7 @@ export function PlatformPricing({ manufacturingCost, onSelectProduct }: Platform
 
 // Componente auxiliar para os resultados
 function PricingResultCard({ name, theme, suggestedPrice, priceWithDiscount, discountPercentage, commission, fixedFee, breakEven, profit, mfgCost, pkgCost, savedPrice }: any) {
-    const isProfitable = suggestedPrice > breakEven;
+    const isProfitable = suggestedPrice > breakEven || profit > 0;
     
     // Theme configurations
     const themes = {
@@ -571,7 +571,7 @@ function PricingResultCard({ name, theme, suggestedPrice, priceWithDiscount, dis
                 <CardHeader className="pb-3 border-b border-white/10">
                     <CardTitle className="text-lg flex items-center gap-2 text-white">
                         <Tag className="h-5 w-5" />
-                        Preço Sugerido - {name}
+                        Visão de Lucratividade - {name}
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-4">
@@ -583,34 +583,43 @@ function PricingResultCard({ name, theme, suggestedPrice, priceWithDiscount, dis
                             </div>
                         ) : null}
 
-                        <p className={`${t.textLight} mb-1 opacity-90 text-sm`}>Para ganhar {formatCurrency(profit)} de lucro limpo (Sugestão):</p>
-                        
-                        {discountPercentage > 0 && priceWithDiscount > suggestedPrice ? (
-                            <div className="w-full bg-black/10 rounded-lg p-3 mt-1 border border-white/10">
-                                <p className="text-xs text-white/80 uppercase tracking-wider font-semibold mb-1">Cadastrar na plataforma por:</p>
-                                <p className="text-4xl font-bold mb-2">{formatCurrency(priceWithDiscount)}</p>
-                                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm mt-2">
-                                    <span className="bg-white/20 px-2 py-0.5 rounded-full text-white font-medium">-{discountPercentage}% Desconto</span>
-                                    <span className="text-white/90">Venda Final: <b>{formatCurrency(suggestedPrice)}</b></span>
-                                </div>
-                            </div>
-                        ) : (
-                            <p className="text-4xl font-bold mt-1 text-white/90">{formatCurrency(suggestedPrice)}</p>
-                        )}
+                        <p className={`${t.textLight} mb-1 opacity-90 text-sm`}>Preço Final de Venda Planejado:</p>
+                        <p className="text-4xl font-bold mt-1 text-white/90">{formatCurrency(suggestedPrice)}</p>
                     </div>
 
                     <Separator className="bg-white/20" />
 
                     <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                            <span className={t.textLight}>Custo 3D + Embalagens base:</span>
-                            <span className="font-mono">{formatCurrency(mfgCost + pkgCost)}</span>
+                        <div className="flex justify-between items-center">
+                            <span className={t.textLight}>Custo Produto (Fabricação + Emb.):</span>
+                            <span className="font-mono text-white">{formatCurrency(mfgCost + pkgCost)}</span>
                         </div>
-                        <div className="flex justify-between">
-                            <span className={t.textLight}>Taxas {name}:</span>
-                            <span className="font-mono">{formatCurrency(commission + fixedFee)}</span>
+                        <div className="flex justify-between items-center">
+                            <span className={t.textLight}>Comissão {name}:</span>
+                            <span className="font-mono text-red-200">-{formatCurrency(commission)}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className={t.textLight}>Taxa Fixa da Plataforma:</span>
+                            <span className="font-mono text-red-200">-{formatCurrency(fixedFee)}</span>
+                        </div>
+                        <Separator className="bg-white/10 my-1 !mt-3" />
+                        <div className="flex justify-between items-center font-bold text-base !mt-3 bg-black/20 p-2 rounded-lg">
+                            <span className="text-white">Lucro Líquido:</span>
+                            <span className="font-mono text-emerald-300">{formatCurrency(profit)}</span>
                         </div>
                     </div>
+                    
+                    {discountPercentage > 0 && priceWithDiscount > suggestedPrice && (
+                        <div className="mt-4 pt-4 border-t border-white/20">
+                            <div className="w-full bg-white/10 rounded-lg p-3 border border-white/20">
+                                <p className="text-xs text-white/80 uppercase tracking-wider font-semibold mb-1">Preço c/ Acréscimo (Para Ofertas):</p>
+                                <p className="text-2xl font-bold mb-1">{formatCurrency(priceWithDiscount)}</p>
+                                <div className="flex items-center gap-2 text-xs">
+                                    <span className="bg-white/20 px-2 py-0.5 rounded-full text-white font-medium">Margem extra construída para desconto de -{discountPercentage}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
